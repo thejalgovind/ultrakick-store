@@ -32,6 +32,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Fetch products for the grid
 app.get('/api/products', (req, res) => {
     db.query("SELECT * FROM products", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -39,11 +40,10 @@ app.get('/api/products', (req, res) => {
     });
 });
 
-// Changed from /api/orders to /api/checkout to match your HTML
+// Matches the checkout form in your index.html
 app.post('/api/checkout', (req, res) => {
     const { name, email, password, address, total } = req.body;
     
-    // Ensure your TiDB 'orders' table has these EXACT column names
     const sql = "INSERT INTO orders (name, email, password, address, total) VALUES (?, ?, ?, ?, ?)";
     
     db.query(sql, [name, email, password, address, total], (err, result) => {
