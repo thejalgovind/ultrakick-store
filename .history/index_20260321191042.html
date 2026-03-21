@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ULTRAKICK — Ultimate Football Store</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --primary: #ccff00;
+      --dark-bg: #0a0a0a;
+      --card-bg: #161616;
+      --text-white: #ffffff;
+      --text-gray: #a0a0a0;
+      --font-heading: 'Bebas Neue', sans-serif;
+      --font-body: 'Barlow', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background-color: var(--dark-bg); color: var(--text-white); font-family: var(--font-body); overflow-x: hidden; }
+
+    /* NAVBAR */
+    nav { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 15px 5%; background: rgba(10, 10, 10, 0.98); 
+      border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 1000; 
+    }
+    .logo { font-family: var(--font-heading); font-size: 2rem; text-decoration: none; color: #fff; }
+    .logo span { color: var(--primary); }
+    
+    .nav-cart-btn { 
+      background: none; border: 1px solid var(--primary); color: var(--primary); 
+      padding: 8px 15px; cursor: pointer; font-family: var(--font-heading); 
+      font-size: 1.1rem; border-radius: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .cart-badge { background: #fff; color: #000; padding: 2px 6px; border-radius: 50%; font-size: 0.7rem; }
+
+    /* HERO */
+    .hero { 
+      height: 60vh; display: flex; flex-direction: column; justify-content: center; 
+      align-items: center; text-align: center; 
+      background: linear-gradient(rgba(0,0,0,0.6), var(--dark-bg)), url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=2000') center/80% no-repeat;
+    }
+    .hero h1 { font-family: var(--font-heading); font-size: 5rem; line-height: 0.9; }
+    .hero h1 span { color: var(--primary); }
+
+    /* PRODUCT GRID */
+    .section-pad { padding: 60px 5%; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+    .product-card { background: var(--card-bg); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid #222; transition: 0.3s; }
+    .product-card:hover { border-color: var(--primary); }
+    .product-card img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; }
+    .product-card h3 { font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 5px; }
+    .product-card .price { color: var(--primary); font-weight: 700; font-size: 1.2rem; margin-bottom: 15px; }
+    .add-btn { 
+      width: 100%; background: var(--primary); color: #000; border: none; 
+      padding: 12px; font-weight: 700; cursor: pointer; border-radius: 6px; 
+    }
+
+    /* CART SIDEBAR */
+    #cartSidebar {
+      position: fixed; right: -400px; top: 0; width: 350px; height: 100%;
+      background: #111; z-index: 2000; transition: 0.4s; padding: 30px;
+      border-left: 2px solid var(--primary); display: flex; flex-direction: column;
+    }
+    #cartSidebar.active { right: 0; }
+    .cart-item { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+    .checkout-btn { background: #fff; color: #000; width: 100%; padding: 15px; border: none; font-weight: 700; cursor: pointer; margin-top: auto; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: #000;
+      padding: 15px 25px; border-radius: 5px; font-weight: 700; display: none; z-index: 3000;
+    }
+
+    /* MODAL */
+    .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
+    .modal-content { background: var(--card-bg); margin: 5% auto; padding: 30px; width: 90%; max-width: 450px; border: 1px solid var(--primary); }
+    input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #333; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="logo">⚽ ULTRA<span>KICK</span></a>
+    <button class="nav-cart-btn" onclick="toggleCart()">
+      <i class="fas fa-shopping-cart"></i> CART <span class="cart-badge" id="cartCount">0</span>
+    </button>
+  </nav>
+
+  <section class="hero">
+    <h1>ELITE <span>GEAR</span><br>ONLY.</h1>
+  </section>
+
+  <section class="section-pad">
+    <h2 style="font-family: var(--font-heading); font-size: 2.5rem; margin-bottom: 30px;">Featured Products</h2>
+    <div class="grid" id="productGrid">
+      </div>
+  </section>
+
+  <div id="cartSidebar">
+    <h2 style="font-family: var(--font-heading); margin-bottom: 20px;">YOUR CART</h2>
+    <div id="cartItems"></div>
+    <div style="margin-top: 20px; font-weight: 700;">Total: ₹<span id="cartTotal">0</span></div>
+    <button class="checkout-btn" onclick="openCheckout()">PROCEED TO CHECKOUT</button>
+    <button onclick="toggleCart()" style="background:none; color:#777; border:none; margin-top:10px; cursor:pointer;">Close</button>
+  </div>
+
+  <div id="checkoutModal" class="modal">
+    <div class="modal-content">
+      <h2 style="font-family: var(--font-heading);">CHECKOUT</h2>
+      <form onsubmit="placeOrder(event)">
+        <input type="text" placeholder="Full Name" required id="formName">
+        <textarea placeholder="Shipping Address" required id="formAddress"></textarea>
+        <input type="tel" placeholder="Phone Number" required id="formPhone">
+        <button type="submit" class="checkout-btn" style="background:var(--primary)">CONFIRM ORDER</button>
+        <button type="button" onclick="closeCheckout()" style="background:none; color:#777; width:100%; border:none; margin-top:10px;">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast">Item added to cart!</div>
+
+  <script>
+    const products = [
+      { id: 1, name: "Real Madrid 25/26 Home", price: 4999, img: "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/7085c98d697843479532822183f39281_9366/Real_Madrid_24-25_Home_Jersey_White_IT5184_01_laydown.jpg" },
+      { id: 2, name: "Predator Elite Boots", price: 12999, img: "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/20b666a4ec704a259c7f3b89b417f7d3_9366/Predator_Elite_FT_Firm_Ground_Boots_Black_IG5453_01_standard.jpg" },
+      { id: 3, name: "Champions League Pro Ball", price: 3499, img: "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/0572b89d49464670868f020310702c81_9366/UCL_Pro_Void_Ball_White_HE3777_01_standard.jpg" }
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('ultrakick_cart')) || [];
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = products.map(p => `
+        <div class="product-card">
+          <img src="${p.img}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p class="price">₹${p.price}</p>
+          <button class="add-btn" onclick="addToCart(${p.id})">ADD TO CART</button>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      cart.push(product);
+      updateCart();
+      showToast();
+    }
+
+    function updateCart() {
+      localStorage.setItem('ultrakick_cart', JSON.stringify(cart));
+      document.getElementById('cartCount').innerText = cart.length;
+      
+      const cartItems = document.getElementById('cartItems');
+      cartItems.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+          <span>${item.name}</span>
+          <span>₹${item.price} <i class="fas fa-trash" onclick="removeItem(${index})" style="cursor:pointer; margin-left:10px; color:#ff4444"></i></span>
+        </div>
+      `).join('');
+      
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cartTotal').innerText = total;
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      updateCart();
+    }
+
+    function toggleCart() {
+      document.getElementById('cartSidebar').classList.toggle('active');
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    function openCheckout() {
+      if(cart.length === 0) return alert("Cart is empty!");
+      document.getElementById('checkoutModal').style.display = 'block';
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutModal').style.display = 'none';
+    }
+
+    function placeOrder(e) {
+      e.preventDefault();
+      const name = document.getElementById('formName').value;
+      alert("ORDER PLACED! Thank you " + name + ".");
+      cart = [];
+      updateCart();
+      closeCheckout();
+      toggleCart();
+    }
+
+    renderProducts();
+    updateCart();
+  </script>
+</body>
+</html>
