@@ -39,12 +39,18 @@ app.get('/api/products', (req, res) => {
     });
 });
 
-app.post('/api/orders', (req, res) => {
-    const { name, item, quantity } = req.body;
-    // Updated columns to match your 'orders' table exactly
-    const sql = "INSERT INTO orders (name, item, quantity) VALUES (?, ?, ?)";
-    db.query(sql, [name, item, quantity], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+// Changed from /api/orders to /api/checkout to match your HTML
+app.post('/api/checkout', (req, res) => {
+    const { name, email, password, address, total } = req.body;
+    
+    // Ensure your TiDB 'orders' table has these EXACT column names
+    const sql = "INSERT INTO orders (name, email, password, address, total) VALUES (?, ?, ?, ?, ?)";
+    
+    db.query(sql, [name, email, password, address, total], (err, result) => {
+        if (err) {
+            console.error("Insert Error:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
         res.json({ message: "Order placed!", orderId: result.insertId });
     });
 });
