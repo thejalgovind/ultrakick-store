@@ -140,8 +140,12 @@
           <input type="text" placeholder="Thejal Govind" required id="formName">
         </div>
         <div class="input-group">
-          <label>EMAIL</label>
+          <label>EMAIL (FOR ACCOUNT)</label>
           <input type="email" placeholder="thejal@example.com" required id="formEmail">
+        </div>
+        <div class="input-group">
+          <label>CREATE PASSWORD</label>
+          <input type="password" placeholder="••••••••" required id="formPass">
         </div>
         <div class="input-group">
           <label>SHIPPING ADDRESS</label>
@@ -157,7 +161,7 @@
     <div class="footer-grid">
       <div class="footer-section">
         <h3>ABOUT THE DEVELOPER</h3>
-        <p>UltraKick was designed and built by <strong>Thejal Govind</strong>.</p>
+        <p>UltraKick was designed and built by <strong>Thejal Govind</strong>. This project showcases a full-stack e-commerce experience tailored for football enthusiasts.</p>
         <a href="https://www.linkedin.com/in/thejal-govind-5b1b46321/" target="_blank" class="social-link">
           <i class="fab fa-linkedin"></i> Connect on LinkedIn
         </a>
@@ -167,8 +171,10 @@
         <ul class="skills-list">
           <li>HTML/CSS</li>
           <li>JavaScript</li>
-          <li>Node.js</li>
-          <li>TiDB (MySQL)</li>
+          <li>C</li>
+          <li>MySQL</li>
+          <li>MongoDB</li>
+          <li>R Programming</li>
         </ul>
       </div>
       <div class="footer-section">
@@ -185,11 +191,11 @@
   <div id="toast">Added to bag!</div>
 
   <script>
-    // AUTOMATICALLY DETECT URL: Uses Render URL when live, localhost when testing
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? "http://localhost:5000/api"
-      : "/api";
-
+    // FIXED: Uses relative path when on Render, and absolute path when on localhost
+    const API_URL = window.location.hostname === 'localhost' 
+        ? "http://localhost:5000/api" 
+        : "/api";
+        
     let products = [];
     let cart = JSON.parse(localStorage.getItem('ultrakick_cart')) || [];
 
@@ -199,8 +205,12 @@
         products = await response.json();
         renderProducts();
       } catch (err) {
-        console.error("Fetch error:", err);
-        document.getElementById('productGrid').innerHTML = '<p style="color:red;">Error loading products from TiDB.</p>';
+        console.error("Backend offline. Loading local fallback.");
+        products = [
+          { id: 1, name: "Real Madrid 24/25 Home", price: 4999, img_url: "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/7085c98d697843479532822183f39281_9366/Real_Madrid_24-25_Home_Jersey_White_IT5184_01_laydown.jpg" },
+          { id: 2, name: "Predator Elite Boots", price: 12999, img_url: "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/20b666a4ec704a259c7f3b89b417f7d3_9366/Predator_Elite_FT_Firm_Ground_Boots_Black_IG5453_01_standard.jpg" }
+        ];
+        renderProducts();
       }
     }
 
@@ -257,15 +267,19 @@
     async function placeOrder(e) {
       e.preventDefault();
       
-      // We send the first item in the cart as a test for your /api/orders route
+      const cleanTotal = document.getElementById('cartTotal').innerText.replace(/[₹,]/g, '').trim();
+
+      // FIXED: Sending all fields to match the TiDB table columns
       const body = {
         name: document.getElementById('formName').value,
-        item: cart[0].name,
-        quantity: cart[0].quantity
+        email: document.getElementById('formEmail').value,
+        password: document.getElementById('formPass').value,
+        address: document.getElementById('formAddress').value,
+        total: cleanTotal
       };
 
       try {
-        const response = await fetch(`${API_URL}/orders`, {
+        const response = await fetch(`${API_URL}/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
@@ -274,16 +288,18 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert(`SUCCESS!\n\nOrder placed for ${body.name}.\nSaved to TiDB.`);
+          alert(`SUCCESS!\n\nOrder placed for ${body.name}.\nDetails saved to TiDB.`);
           cart = [];
           updateCart();
           closeCheckout();
           toggleCart();
         } else {
-          alert("Order failed: " + result.error);
+          // If this fails, make sure your TiDB table has 'name', 'email', 'password', 'address', 'total' columns
+          alert("Order failed: " + (result.error || "Check database columns"));
         }
       } catch (err) {
-        alert("Server Error. Check Render Logs.");
+        console.error("Fetch error:", err);
+        alert("Server is offline. Ensure 'nodemon server.js' is running!");
       }
     }
 
