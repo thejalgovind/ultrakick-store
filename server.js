@@ -16,7 +16,7 @@ const db = mysql.createConnection({
     port: process.env.TIDB_PORT,
     user: process.env.TIDB_USER,
     password: process.env.TIDB_PASSWORD,
-    database: process.env.TIDB_DATABASE,
+    database: 'test', // Explicitly using the 'test' database found in your logs
     ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
 });
 
@@ -41,8 +41,6 @@ app.get('/api/products', (req, res) => {
 
 app.post('/api/checkout', (req, res) => {
     const { name, email, password, address, total } = req.body;
-    
-    // This query now matches the 5 fields from your HTML form
     const sql = "INSERT INTO orders (name, email, password, address, total) VALUES (?, ?, ?, ?, ?)";
     
     db.query(sql, [name, email, password, address, total], (err, result) => {
